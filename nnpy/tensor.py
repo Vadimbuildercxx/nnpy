@@ -91,7 +91,7 @@ class Tensor:
         
         if self.requires_grad:
             def _backward():
-                self.grad += out.grad.T #* self.data.T
+                self.grad += out.grad.T
             out._backward  = _backward
 
         return out
