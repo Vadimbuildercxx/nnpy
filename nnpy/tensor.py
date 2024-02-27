@@ -24,16 +24,27 @@ class Tensor:
         if self.requires_grad:
             def _add_backward():
 
-                out_ndim = out.grad.squeeze().ndim
-                if self.grad.squeeze().ndim == 1 and out_ndim > 1:
-                    self.grad += np.ones(shape=self.grad.shape) @ out.grad
-                else:
-                    self.grad += 1.0 * out.grad
+                self_shape_extended = np.pad(np.array(self.shape), (out.ndim - self.ndim, 0))
 
-                if other.grad.squeeze().ndim == 1 and out_ndim > 1:
-                    other.grad += np.ones(shape=other.grad.shape) @ out.grad
-                else:
-                    other.grad += 1.0 * out.grad
+                diff_self_out = np.minimum(np.abs(np.array(object=out.shape) - self_shape_extended), 1)
+
+                _grad_self = np.ones(shape=out.shape)
+                for i, x in enumerate(np.nditer(diff_self_out)):
+                    if x.item(0) != 0:
+                        _grad_self = _grad_self.sum(i, keepdims=True)
+
+                self.grad += _grad_self.reshape(self.grad.shape) # * out.grad
+
+                other_shape_extended = np.pad(np.array(other.shape), (out.ndim - other.ndim, 0))
+
+                diff_other_out = np.minimum(np.abs(np.array(object=out.shape) - other_shape_extended), 1)
+                
+                _grad_other = np.ones(shape=out.shape)
+                for i, x in enumerate(np.nditer(diff_other_out)):
+                    if x.item(0) != 0:
+                        _grad_other = _grad_other.sum(i, keepdims=True)
+
+                other.grad += _grad_other.reshape(other.grad.shape) #+ 1.0 * out.grad
 
             out._backward  = _add_backward
 
@@ -51,21 +62,21 @@ class Tensor:
             def _mul_backward():
                 diff_self_out = np.minimum(np.abs(np.array(self.shape) - np.array(object=out.shape)), 1)
 
-                _grad_self = np.broadcast_to(array=out.grad * other.data, shape=out.shape)
+                _grad_self = np.broadcast_to(array = other.data * out.grad, shape=out.shape)
                 for i, x in enumerate(np.nditer(diff_self_out)):
                     if x.item(0) != 0:
                         _grad_self = _grad_self.sum(i, keepdims=True)
 
-                self.grad = self.grad + _grad_self
+                self.grad += _grad_self.reshape(self.grad.shape)
 
                 diff_other_out = np.minimum(np.abs(np.array(other.shape) - np.array(object=out.shape)), 1)
 
-                _grad_other = np.broadcast_to(array=out.grad *self.data, shape=out.shape)
+                _grad_other = np.broadcast_to(array = self.data * out.grad, shape=out.shape)
                 for i, x in enumerate(np.nditer(diff_other_out)):
                     if x.item(0) != 0:
                         _grad_other = _grad_other.sum(i, keepdims=True)
 
-                other.grad = other.grad + _grad_other
+                other.grad += _grad_other.reshape(other.grad.shape)
 
             out._backward  = _mul_backward
 
@@ -124,6 +135,10 @@ class Tensor:
     @property
     def shape(self):
         return self.data.shape
+    
+    @property
+    def ndim(self):
+        return self.data.ndim
     
     def sum(self, dim = None) -> "Tensor":
         out = Tensor(data=np.expand_dims(np.sum(self.data, axis=dim), axis=0), _children=(self,), _op = "sum", requires_grad=self.requires_grad)

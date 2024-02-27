@@ -9,10 +9,10 @@ class Linear():
         self.bias = bias
         if self.bias:
             self.b = nnpy.zeros(out_features, requires_grad=True)
-        self.weights = nnpy.rand(out_features, in_features, requires_grad=True)
+        self.weight = nnpy.rand(out_features, in_features, requires_grad=True)
 
     def forward(self, tensor: nnpy.Tensor) -> nnpy.Tensor:
-        out: nnpy.Tensor = tensor @ self.weights
+        out: nnpy.Tensor = tensor @ self.weight.T
         if self.bias:
             out = out + self.b
         return out
