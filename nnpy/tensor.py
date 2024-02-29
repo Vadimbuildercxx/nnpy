@@ -141,7 +141,7 @@ class Tensor:
         return self.data.ndim
     
     def sum(self, dim = None) -> "Tensor":
-        out = Tensor(data=np.expand_dims(np.sum(self.data, axis=dim), axis=0), _children=(self,), _op = "sum", requires_grad=self.requires_grad)
+        out = Tensor(data = np.squeeze(np.sum(self.data, axis=dim, keepdims=True)), _children=(self,), _op = "sum", requires_grad=self.requires_grad)
         
         if self.requires_grad:
             def _sum_backward():
@@ -215,11 +215,21 @@ def maximum(input: Tensor, other: Tensor) -> Tensor:
     other = other if isinstance(other, Tensor) else Tensor(other)
     out = Tensor(np.maximum(input.data, other.data),(input, ), _op="maximum", requires_grad=input.requires_grad)
     
-    grad = np.minimum(np.maximum(out.data, 0), 1)
+    grad = np.where(out.data > 0., 1, out.data)
 
     if input.requires_grad:
         def _backward():
             input.grad += out.grad * grad
         out._backward  = _backward
+
+    return out
+
+def sum(input: Tensor, dim=None, keepdim=False) -> Tensor:
+    out = Tensor(data=np.sum(input.data, axis=dim, keepdims=keepdim), _children=(input,), _op = "sum", requires_grad=input.requires_grad)
+        
+    if input.requires_grad:
+        def _sum_backward():
+            input.grad += 1.0 * out.grad
+        out._backward  = _sum_backward
 
     return out

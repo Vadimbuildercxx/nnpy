@@ -9,3 +9,15 @@ class ReLU():
     
     def __call__(self, tensor: nnpy.Tensor) -> nnpy.Tensor:
         return self.forward(tensor)
+
+class Softmax():
+    def __init__(self, dim = None) -> None:
+        super().__init__()
+        self.dim = dim
+
+    def forward(self, tensor: nnpy.Tensor) -> nnpy.Tensor:
+        exp = tensor.exp()
+        return exp / nnpy.sum(exp, dim = self.dim, keepdim=True)
+    
+    def __call__(self, tensor: nnpy.Tensor) -> nnpy.Tensor:
+        return self.forward(tensor)
