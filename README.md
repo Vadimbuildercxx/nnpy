@@ -1,5 +1,4 @@
 # Pytorch on pure Numpy 
-=======================================================
 
 ## Description
 This project is a Pytorch library implementation, using exclusively Numpy. It includes modules, layers, AutoGrad implementation, and more.
