@@ -1,6 +1,7 @@
 import nnpy
+from nnpy.nn.modules.module import Module
 
-class ReLU():
+class ReLU(Module):
     def __init__(self) -> None:
         super().__init__()
 
@@ -10,7 +11,7 @@ class ReLU():
     def __call__(self, tensor: nnpy.Tensor) -> nnpy.Tensor:
         return self.forward(tensor)
 
-class Softmax():
+class Softmax(Module):
     def __init__(self, dim = None) -> None:
         super().__init__()
         self.dim = dim

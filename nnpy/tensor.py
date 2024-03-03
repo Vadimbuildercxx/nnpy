@@ -1,5 +1,7 @@
 import numpy as np
 
+# info https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html
+
 class Tensor:
     def __init__(self, data, _children=(), _op="", label = "", requires_grad= False) -> None:
 
@@ -108,6 +110,7 @@ class Tensor:
         return self + (-other)
     
     def __matmul__(self, other: "Tensor") -> "Tensor":
+        
         other = other if isinstance(other, Tensor) else Tensor(other)
 
         product = np.matmul(self.data, other.data)
@@ -150,6 +153,7 @@ class Tensor:
 
         return out
     
+    # Need check
     def tanh(self) -> "Tensor":
         x = self.data
         t = (np.exp(2*x) - 1)/(np.exp(2*x) + 1)
