@@ -1,4 +1,4 @@
-import numpy as np
+import nnpy
 
 class CrossEntropyLoss():
     """
@@ -7,16 +7,19 @@ class CrossEntropyLoss():
         weight (optional): a manual rescaling weight given to each class.
         reduction (optional): Different types of reduction ``sum``, ``mean``
     """
-    def __init__(self, weight: np.float_ = 1, reduction = "mean") -> None:
+    def __init__(self, weight = 1, reduction = "mean") -> None:
         self.weight = weight
         self.reduction = reduction
 
-    def forward(self, input: np.ndarray, target: np.ndarray) -> np.float_:
-        loss = -self.weight * np.log(input) * target
+    def forward(self, input: nnpy.Tensor, target: nnpy.Tensor) -> nnpy.Tensor:
+        loss = -self.weight * nnpy.log(input) * target
         if self.reduction == "mean":
-            loss = np.mean(loss)
+            loss = nnpy.mean(loss)
         elif self.reduction == "sum":
-            loss = np.sum(loss)
+            loss = nnpy.sum(loss)
         else:
             raise Exception("Wrong reduction type")
         return loss
+    
+    def __call__(self, input: nnpy.Tensor, target: nnpy.Tensor) -> nnpy.Tensor:
+        return self.forward(input, target)

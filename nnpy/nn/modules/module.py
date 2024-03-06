@@ -1,5 +1,6 @@
 #info https://discuss.pytorch.org/t/how-does-parameter-work/11960/4
 #info https://pytorch.org/docs/0.3.0/nn.html#torch.nn.ModuleList
+from typing import Any
 from nnpy.nn.modules.parameter import Parameter
 
 class Module:
@@ -18,3 +19,9 @@ class Module:
             params.extend(l)
 
         return params_in + params
+    
+    def forward(self, *args):
+        raise NotImplementedError()
+    
+    def __call__(self, *args: Any):
+        return self.forward(*args)
